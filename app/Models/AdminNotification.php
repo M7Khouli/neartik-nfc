@@ -14,6 +14,8 @@ class AdminNotification extends Model
     protected $fillable = [
         'title',
         'body',
+        'type',
+        'image'
     ];
 
     public function admin(): BelongsTo {

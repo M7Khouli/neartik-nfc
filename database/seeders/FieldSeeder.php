@@ -18,7 +18,7 @@ class FieldSeeder extends Seeder
         Field::query()
         ->insert([
             ["name"=>"Facebook","type"=>"social"],
-            ["name"=>"Instegram","type"=>"social"],
+            ["name"=>"Instagram","type"=>"social"],
             ["name"=>"WhatsApp","type"=>"social"],
             ["name"=>"Snapchat","type"=>"social"],
             ["name"=>"Discord","type"=>"social"],

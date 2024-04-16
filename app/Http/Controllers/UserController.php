@@ -57,7 +57,7 @@ class UserController extends Controller
             $image = $image->info;
 
             AdminNotification::query()
-            ->create(['title'=>$title,'body'=>$body]);
+            ->create(['title'=>$title,'body'=>$body,'image'=>$image,'type'=>'new message']);
 
             FcmService::notify($title,$body,$target,$image);
 
