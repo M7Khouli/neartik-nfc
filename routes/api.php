@@ -21,7 +21,10 @@ Route::post('/admins/users/{id}/activate',[AdminController::class,'activeUser'])
 Route::get('/admins/fields',[FieldController::class,'index'])->middleware('auth:admins');
 Route::get('/admins/notifications',[AdminController::class,'getNotifications'])->middleware('auth:admins');
 Route::get('/admins/users/{id}', [AdminController::class,'getUser'])->middleware('auth:admins');
+
 Route::delete('/admins/users/{id}', [AdminController::class,'deleteUser'])->middleware('auth:admins');
+
+Route::get('/admins/charts', [AdminController::class,'charts'])->middleware('auth:admins');
 
 Route::post('/users/login',[UserAuthController::class,'login']);
 

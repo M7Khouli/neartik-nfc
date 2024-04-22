@@ -37,13 +37,13 @@ class CreateProfileEditRequest extends FormRequest
             'phone_number2'=>'sometimes|required|string',
             'email1'=>'sometimes|required|string',
             'email2'=>'sometimes|required|string',
-            'Bio'=>'sometimes|required|string',
+            'bio'=>'sometimes|required|string',
             'location'=>'sometimes|required|string',
-            'Youtube_video'=>'sometimes|required|string',
-            'PayPal'=>'sometimes|required|string',
-            'Venmo'=>'sometimes|required|string',
-            'CashApp'=>'sometimes|required|string',
-            'banner'=>'sometimes|required|mimes:jpg',
+            'youtube_video'=>'sometimes|required|string',
+            'paypal'=>'sometimes|required|string',
+            'venmo'=>'sometimes|required|string',
+            'cashapp'=>'sometimes|required|string',
+            'banner'=>'sometimes|required|mimes:jpg,png',
             'photo'=>'sometimes|required|mimes:jpg,png',
         ];
     }
@@ -57,13 +57,15 @@ class CreateProfileEditRequest extends FormRequest
             if($this->photo)
             $photoPath = $this->file('photo')->store('public/img');
             if($this->banner)
-            $photoPath = $this->file('banner')->store('public/img');
-
+            $bannerPath = $this->file('banner')->store('public/img');
+            if($this->photo)
             $photoPath = url('storage'.substr($photoPath,6));
+            if($this->banner)
+            $bannerPath = url('storage'.substr($bannerPath,6));
             if($this->photo)
             $req['photo']=$photoPath;
             if($this->banner)
-            $req['banner']=$photoPath;
+            $req['banner']=$bannerPath;
         }
 
         return $req;

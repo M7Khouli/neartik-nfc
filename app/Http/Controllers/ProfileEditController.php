@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\GetUserResource;
+use App\Models\AdminNotification;
 use App\Models\Field;
 use App\Models\ProfileEdit;
 use App\Models\User;
@@ -17,7 +18,6 @@ class ProfileEditController extends Controller
 
     public function approve(Request $req){
 
-        $user = User::findOrFail($req->id)->first();
 
         $pendingProfileEdits = ProfileEdit::query()
         ->where('user_id',$req->id)
@@ -50,10 +50,8 @@ class ProfileEditController extends Controller
             else {
                 $field = UserField::query()
                 ->where('user_id',$edit->user_id)
-                ->where('old_value',$edit->old_value)
-                ->first();
-                $field->update(['info'=>$edit->new_value]);
-
+                ->where('field_id',$field->id)
+                ->update(['info'=>$edit->new_value]);
             }
 
             $edit->update(['status' => 'approved']);
@@ -69,7 +67,8 @@ class ProfileEditController extends Controller
             ,'body'=>$body
             ,'user_id'=>$req->id
         ]);
-        $user->update(['approved'=>1]);
+        AdminNotification::query()->where('body',$req->id)->delete();
+        User::where('id',$req->id)->update(['approved'=>1]);
         return response()->json(['message'=>'edits successfully approved'],200);
 
     }
@@ -110,6 +109,7 @@ class ProfileEditController extends Controller
             ,'user_id'=>$req->id
         ]);
 
+        AdminNotification::query()->where('body',$req->id)->delete();
         return response()->json(['message'=>'edits successfully declined'],200);
     }
 

@@ -16,7 +16,7 @@ class Field extends Model
     'type',
     ];
 
-    public function userField(): BelongsTo
+    public function userFields(): BelongsTo
     {
         return $this->belongsTo(UserField::class);
     }

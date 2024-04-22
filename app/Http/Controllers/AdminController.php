@@ -6,8 +6,10 @@ use App\Http\Requests\CheckUserRequest;
 use App\Http\Resources\GetUserResource;
 use App\Http\Resources\UserResource;
 use App\Models\AdminNotification;
+use App\Models\Field;
 use App\Models\ProfileEdit;
 use App\Models\User;
+use App\Models\UserField;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -99,7 +101,10 @@ class AdminController extends Controller
         $pending = User::query()
         ->findOrFail($req->id)
         ->profileEdits()
-        ->get();
+        ->when($req->status, function ($query) use ($req) {
+                $query->where('status', $req->status);
+            })->get();
+
 
         return response()->json(['data'=>$pending],200);
     }
@@ -111,4 +116,39 @@ class AdminController extends Controller
         return response()->json(['data'=>$notifications],200);
     }
 
+    public function charts(){
+
+        $users = User::all()->count();
+
+        $fields= UserField::all()->count();
+
+        $pending =  User::whereHas('profileEdits',function ($query){
+            $query->where('status','pending');
+        })->count();
+
+        $unacitvated = User::where('activated',0)->count();
+
+        $fieldsCount = UserField::where('field_id','<=',17)->groupBy('field_id')->select('field_id', UserField::raw('count(*) as total'))->get();
+
+        $allFields = Field::all();
+
+
+        foreach($fieldsCount as $value){
+            foreach ($allFields as $valueT) {
+                if($value->field_id === $valueT->id){
+                    $value->field_id = $valueT->name;
+                }
+            }
+        }
+
+        return response()->json(['data'=>[
+            'user_count'=>$users,
+            'fields_count'=>$fields,
+            'pending_count'=>$pending,
+            'activateCount'=>[
+                'acitvated_count'=>$users-$unacitvated,
+                'unactivated_count'=>$unacitvated],
+            'fields'=>$fieldsCount
+        ]],200);
+    }
 }

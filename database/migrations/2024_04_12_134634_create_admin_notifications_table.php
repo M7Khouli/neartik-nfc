@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('admin_notifications', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('body');
+            $table->foreignUuid('body')->references('id')->on('users')->onDelete('cascade');
             $table->string('type');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

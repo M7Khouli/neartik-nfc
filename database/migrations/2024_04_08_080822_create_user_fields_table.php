@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('user_fields', function (Blueprint $table) {
             $table->id();
             $table->string('info');
-            $table->foreignUuid('user_id')->constrained();
-            $table->foreignId('field_id')->constrained();
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('field_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
