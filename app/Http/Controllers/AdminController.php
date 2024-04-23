@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CheckUserRequest;
+use App\Http\Requests\LoginRequest;
 use App\Http\Resources\GetUserResource;
 use App\Http\Resources\UserResource;
+use App\Models\Admin;
 use App\Models\AdminNotification;
 use App\Models\Field;
 use App\Models\ProfileEdit;
@@ -151,4 +153,23 @@ class AdminController extends Controller
             'fields'=>$fieldsCount
         ]],200);
     }
+
+
+    public function addAdmins(LoginRequest $request){
+
+        $adminCred = $request->validated();
+
+        Admin::query()
+        ->create($adminCred);
+
+        return response()->json([
+            "message"=>"admin added successfully !",
+            "email"=>$adminCred['email'],
+            "password"=>$adminCred['password']
+        ]);
+
+
+    }
+
+
 }

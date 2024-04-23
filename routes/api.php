@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/admins',[AdminController::class,'addAdmins'])->middleware('auth::admins');
 Route::get('/admins/users', [AdminController::class,'getUsers'])->middleware('auth:admins');
 Route::post('/admins/users', [AdminController::class,'addUser'])->middleware('auth:admins');
 Route::post('/admins/login',[AuthController::class,'adminLogin']);
