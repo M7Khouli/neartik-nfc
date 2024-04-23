@@ -27,6 +27,7 @@ class AuthController extends Controller
 
         $token = $admin->createToken('Bearer')->plainTextToken;
 
+        if($req['fcmToken'])
         AdminFcmToken::query()->firstOrCreate(['token'=>$req['fcmToken'],'admin_id'=>$admin->id]);
 
         return response()->json(['message'=>'login successfully !','token'=>$token],200);

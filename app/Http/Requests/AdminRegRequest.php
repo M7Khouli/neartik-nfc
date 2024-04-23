@@ -25,13 +25,13 @@ class AdminRegRequest extends FormRequest
     {
         return [
             //
-            "email"=>"required|email",
+            "email"=>"required|email|unique:admins,email",
             "password"=>"required|min:8|max:32"
         ];
     }
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json(['message'=>'Please enter a id or password'],422));
+        throw new HttpResponseException(response()->json(['errors'=>$validator->errors()->all()],422));
 
     }
 }

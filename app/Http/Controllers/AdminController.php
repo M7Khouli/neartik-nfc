@@ -14,6 +14,7 @@ use App\Models\ProfileEdit;
 use App\Models\User;
 use App\Models\UserField;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -173,5 +174,17 @@ class AdminController extends Controller
 
     }
 
+    public function restPassword(Request $req){
+
+       $user =User::query()
+        ->findOrFail($req->id);
+
+        $user->update(['password'=>Hash::make($user->id)]);
+
+        return response()->json([
+            'message'=>'password reseted successfully'
+        ]);
+
+    }
 
 }
