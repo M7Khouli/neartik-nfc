@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AdminRegRequest;
 use App\Http\Requests\CheckUserRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\GetUserResource;
@@ -155,7 +156,8 @@ class AdminController extends Controller
     }
 
 
-    public function addAdmins(LoginRequest $request){
+    public function addAdmins(AdminRegRequest $request){
+
 
         $adminCred = $request->validated();
 

@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class AdminLoginRequest extends FormRequest
+class AdminRegRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,15 +24,14 @@ class AdminLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=>'required|email',
-            'password'=>'required|min:8|max:32',
+            //
+            "email"=>"required|email",
+            "password"=>"required|min:8|max:32"
         ];
     }
-
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json(['message'=>'please enter a valid email or password'],422));
+        throw new HttpResponseException(response()->json(['message'=>'Please enter a id or password'],422));
 
     }
-
 }
