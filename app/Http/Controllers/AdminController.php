@@ -3,26 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminRegRequest;
-use App\Http\Requests\CheckUserRequest;
-use App\Http\Requests\LoginRequest;
 use App\Http\Resources\GetUserResource;
-use App\Http\Resources\UserResource;
 use App\Models\Admin;
 use App\Models\AdminNotification;
 use App\Models\Field;
-use App\Models\ProfileEdit;
 use App\Models\User;
 use App\Models\UserField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
     //
 
-    public function getUsers(){
+    public function getUsers(Request $req){
 
-       $users = User::query()->paginate(10);
+        $users = User::query()
+        ->when($req->card_id,function($query){
+            return $query->where('card_id','like',request('card_id'));
+        })
+        ->paginate(10);
 
         return response()->json([
             'data' => $users->items()
@@ -76,10 +77,15 @@ class AdminController extends Controller
 
 
     }
-    public function addUser(){
+    public function addUser(Request $req){
 
+        $validated = Validator::make($req->all(),['card_id'=>'required|integer|min:1|max:9999999|unique:users,card_id']);
 
-        $user = User::query()->create();
+        if($validated->fails()){
+            return response()->json(['message'=>'please enter a valid card id'],422);
+        }
+
+        $user = User::query()->create(['card_id'=>$req->card_id]);
 
         return response()->json(['message'=>'user successfully created','id'=>$user->id]);
     }
