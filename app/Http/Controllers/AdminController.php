@@ -12,6 +12,7 @@ use App\Models\UserField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Activitylog\Models\Activity;
 
 class AdminController extends Controller
 {
@@ -51,6 +52,15 @@ class AdminController extends Controller
             return response()->json(['message'=>'please enter a vaild user id'],400);
         }
 
+
+        $user = User::find($req->id)->first();
+        $admin = Admin::find($req->user()->id)->first();
+
+        activity()
+        ->performedOn($user)
+        ->causedBy($admin)
+        ->log('Admin deleted user');
+
         return response()->json(['message'=>'user successfully deleted'],200);
 
     }
@@ -60,6 +70,14 @@ class AdminController extends Controller
         $user = User::query()
         ->findOrFail($req->id);
 
+
+        $user = User::find($req->id)->first();
+        $admin = Admin::find($req->user()->id)->first();
+
+        activity()
+        ->performedOn($user)
+        ->causedBy($admin)
+        ->log('Admin deactivated user');
 
         $user->tokens()->delete();
 
@@ -190,6 +208,14 @@ class AdminController extends Controller
         return response()->json([
             'message'=>'password reseted successfully'
         ]);
+
+    }
+
+    public function getActivities(){
+
+        return response()->json(['data'=>Activity::all()]);
+
+
 
     }
 

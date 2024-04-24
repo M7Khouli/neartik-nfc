@@ -59,7 +59,7 @@ class UserController extends Controller
             AdminNotification::query()
             ->create(['title'=>$title,'body'=>$body,'image'=>$image,'type'=>'new message']);
 
-            FcmService::notify($title,$body,$target,$image);
+ //           FcmService::notify($title,$body,$target,$image);
 
 
             return response()->json(['message'=>'edit successfully submited, please wait until the admin accept them.']);

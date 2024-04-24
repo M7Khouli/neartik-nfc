@@ -13,6 +13,7 @@ Route::post('/admins/login',[AuthController::class,'adminLogin']);
 
 Route::middleware('auth:admins')->group(function() {
 
+Route::get('/admins/activities',[AdminController::class,'getActivities']);
 Route::post('/admins',[AdminController::class,'addAdmins']);
 Route::get('/admins/users', [AdminController::class,'getUsers']);
 Route::post('/admins/users/{id}/reset-password',[AdminController::class,'restPassword']);

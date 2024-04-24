@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\GetUserResource;
+use App\Models\Admin;
 use App\Models\AdminNotification;
 use App\Models\Field;
 use App\Models\ProfileEdit;
@@ -62,6 +63,14 @@ class ProfileEditController extends Controller
 
         FcmService::notify($title,$body,[$req->id]);
 
+        $user = User::find($req->id)->first();
+        $admin = Admin::find($req->user()->id)->first();
+
+        activity()
+        ->performedOn($user)
+        ->causedBy($admin)
+        ->log('Admin accepted user edits');
+
         UserNotification::query()
         ->create(['title'=>$title
             ,'body'=>$body
@@ -102,6 +111,15 @@ class ProfileEditController extends Controller
         $body = $req->reason;
 
         FcmService::notify($title,$body,[$req->id]);
+
+
+        $user = User::find($req->id)->first();
+        $admin = Admin::find($req->user()->id)->first();
+        activity()
+        ->performedOn($user)
+        ->causedBy($admin)
+        ->log('Admin declined user edits');
+
 
         UserNotification::query()
         ->create(['title'=>$title
