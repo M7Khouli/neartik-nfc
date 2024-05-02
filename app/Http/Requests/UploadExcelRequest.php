@@ -3,10 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
-class AdminLoginRequest extends FormRequest
+class UploadExcelRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,14 +22,7 @@ class AdminLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=>'required|email',
-            'password'=>'required|min:8|max:32',
+            'excel'=>'required|mimes:csv,xlsx,xlsm,xlsb'
         ];
     }
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(response()->json(['errors'=>$validator->errors()->all()],422));
-    }
-
 }

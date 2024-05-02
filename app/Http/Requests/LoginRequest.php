@@ -20,7 +20,7 @@ class LoginRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json(['message'=>'Please enter a id or password'],422));
+        throw new HttpResponseException(response()->json(['errors'=>$validator->errors()->all()],422));
 
     }
 }

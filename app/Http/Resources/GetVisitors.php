@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Field;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class GetUserResource extends JsonResource
+class GetVisitors extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,8 +15,8 @@ class GetUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'field'=>$this->name,
-            'value'=>$this->field->info,
+            'country'=>$this->length,
+            'country_code'=>$this->*->country_code,
         ];
     }
 }

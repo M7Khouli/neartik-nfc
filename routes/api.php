@@ -6,6 +6,7 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\ProfileEditController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\UserController;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,10 +14,14 @@ Route::post('/admins/login',[AuthController::class,'adminLogin']);
 
 Route::middleware('auth:admins')->group(function() {
 
+Route::get('/admins',[AdminController::class,'getAdmins']);
 Route::get('/admins/activities',[AdminController::class,'getActivities']);
 Route::post('/admins',[AdminController::class,'addAdmins']);
 Route::get('/admins/users', [AdminController::class,'getUsers']);
 Route::post('/admins/users/{id}/reset-password',[AdminController::class,'restPassword']);
+Route::post('/admins/users/{id}/excel',[AdminController::class,'addExcel']);
+//Route::get('/admins/users/{id}/excel',[AdminController::class,'getExcel']);
+//Route::delete('/admins/users/{id}/excel',[AdminController::class,'deleteExcel']);
 Route::post('/admins/users', [AdminController::class,'addUser']);
 Route::get('/admins/users/profile-edits',[AdminController::class,'getPendingUsers']);
 Route::get('/admins/users/{id}/profile-edits',[AdminController::class,'getUserEdits']);
@@ -26,9 +31,11 @@ Route::post('/admins/users/{id}/deactivate',[AdminController::class,'deactiveUse
 Route::post('/admins/users/{id}/activate',[AdminController::class,'activeUser']);
 Route::get('/admins/fields',[FieldController::class,'index']);
 Route::get('/admins/notifications',[AdminController::class,'getNotifications']);
+Route::get('/admins/users/visitors',[AdminController::class,'getVisitors']);
 Route::get('/admins/users/{id}', [AdminController::class,'getUser']);
 Route::delete('/admins/users/{id}', [AdminController::class,'deleteUser']);
 Route::get('/admins/charts', [AdminController::class,'charts']);
+
 
 });
 

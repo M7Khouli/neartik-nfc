@@ -15,7 +15,8 @@ class AdminNotification extends Model
         'title',
         'body',
         'type',
-        'image'
+        'image',
+        'user_id'
     ];
 
     public function admin(): BelongsTo {

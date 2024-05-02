@@ -3,14 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminRegRequest;
+use App\Http\Requests\UploadExcelRequest;
 use App\Http\Resources\GetUserResource;
 use App\Models\Admin;
 use App\Models\AdminNotification;
 use App\Models\Field;
 use App\Models\User;
 use App\Models\UserField;
+use App\Models\UserLogin;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Activitylog\Models\Activity;
 
@@ -22,8 +27,9 @@ class AdminController extends Controller
 
         $users = User::query()
         ->when($req->card_id,function($query){
-            return $query->where('card_id','like',request('card_id'));
+            return $query->where('card_id','like',request('card_id').'%');
         })
+        ->latest()
         ->paginate(10);
 
         return response()->json([
@@ -39,28 +45,41 @@ class AdminController extends Controller
     public function getUser(Request $req){
 
         $user = User::query()
-        ->findOrFail($req->id)->fields;
+        ->where('id',$req->id)->first();
 
-        return GetUserResource::collection($user);
+
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']]);
+        }
+
+        $excel = $user->makeVisible(['excel']);
+
+        $excel = $excel->excel;
+
+        $user = $user->fields;
+
+        return response()->json(['data'=>GetUserResource::collection($user),'excel'=>$excel]);
+
     }
 
     public function deleteUser(Request $req){
 
-        $user = User::destroy($req->id);
 
+        $user = User::where('id',$req->id)->first();
         if(!$user){
-            return response()->json(['message'=>'please enter a vaild user id'],400);
+            return response()->json(['errors'=>['please enter a vaild user id']],400);
         }
 
 
-        $user = User::find($req->id)->first();
-        $admin = Admin::find($req->user()->id)->first();
+        $admin = Admin::where('id',$req->user()->id)->first();
 
         activity()
         ->performedOn($user)
         ->causedBy($admin)
+        ->withProperties(['admin_email'=>$admin->email,'card_id'=>$user->card_id])
         ->log('Admin deleted user');
 
+        $user = User::destroy($req->id);
         return response()->json(['message'=>'user successfully deleted'],200);
 
     }
@@ -68,15 +87,19 @@ class AdminController extends Controller
     public function deactiveUser(Request $req){
 
         $user = User::query()
-        ->findOrFail($req->id);
+        ->where('id',$req->id)->first();
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']]);
+        }
 
 
-        $user = User::find($req->id)->first();
-        $admin = Admin::find($req->user()->id)->first();
+        $user = User::where('id',$req->id)->first();
+        $admin = Admin::where('id',$req->user()->id)->first();
 
         activity()
         ->performedOn($user)
         ->causedBy($admin)
+        ->withProperties(['admin_email'=>$admin->email,'card_id'=>$user->card_id])
         ->log('Admin deactivated user');
 
         $user->tokens()->delete();
@@ -88,19 +111,31 @@ class AdminController extends Controller
 
     public function activeUser(Request $req){
         $user = User::query()
-        ->findOrFail($req->id);
+        ->where('id',$req->id)->first();
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']]);
+        }
+
         $user->update(['activated'=>1]);
 
+        $user = User::where('id',$req->id)->first();
+        $admin = Admin::where('id',$req->user()->id)->first();
+
+        activity()
+        ->performedOn($user)
+        ->causedBy($admin)
+        ->withProperties(['admin_email'=>$admin->email,'card_id'=>$user->card_id])
+        ->log('Admin deactivated user');
         return response()->json(['message'=>'user activated successfully.'],200);
 
 
     }
     public function addUser(Request $req){
 
-        $validated = Validator::make($req->all(),['card_id'=>'required|integer|min:1|max:9999999|unique:users,card_id']);
+        $validated = Validator::make($req->all(),['card_id'=>'required|string|min:1|max:7|regex:/^\d+$/|unique:users,card_id']);
 
         if($validated->fails()){
-            return response()->json(['message'=>'please enter a valid card id'],422);
+            return response()->json(['errors'=>$validated->errors()->all()],422);
         }
 
         $user = User::query()->create(['card_id'=>$req->card_id]);
@@ -112,7 +147,7 @@ class AdminController extends Controller
 
         $pending =  User::whereHas('profileEdits',function ($query){
             $query->where('status','pending');
-        })->paginate(10);
+        })->latest()->paginate(10);
 
         return response()->json([
             'data' => $pending->items()
@@ -127,11 +162,12 @@ class AdminController extends Controller
     public function getUserEdits(Request $req){
 
         $pending = User::query()
-        ->findOrFail($req->id)
-        ->profileEdits()
+        ->where('id',$req->id)->first();
+
+        $pending = $pending->profileEdits()
         ->when($req->status, function ($query) use ($req) {
                 $query->where('status', $req->status);
-            })->get();
+            })->latest()->get();
 
 
         return response()->json(['data'=>$pending],200);
@@ -139,7 +175,7 @@ class AdminController extends Controller
 
     public function getNotifications(){
 
-        $notifications = AdminNotification::all();
+        $notifications = AdminNotification::query()->latest()->get();
 
         return response()->json(['data'=>$notifications],200);
     }
@@ -169,6 +205,28 @@ class AdminController extends Controller
             }
         }
 
+        $doesnotHaveExcel = User::query()->where('excel',null)->get()->count();
+
+
+        $totalVisitors = User::all()->sum('visitors');
+
+        $mostVisited = User::orderByRaw('CONVERT(VISITORS,SIGNED) desc')->get(['id','card_id','visitors']);
+
+        $signedInLast24Hours = UserLogin::query()
+        ->where('created_at','>=',Carbon::now()->subHours(24))
+        ->distinct('user_id')
+        ->count();
+
+        $signedInLastWeek = UserLogin::query()
+        ->where('created_at','>=',Carbon::now()->subWeek())
+        ->distinct('user_id')
+        ->count();
+
+        $signedInLastMonth = UserLogin::query()
+        ->where('created_at','>=',Carbon::now()->subMonth())
+        ->distinct('user_id')
+        ->count();
+
         return response()->json(['data'=>[
             'user_count'=>$users,
             'fields_count'=>$fields,
@@ -176,7 +234,14 @@ class AdminController extends Controller
             'activateCount'=>[
                 'acitvated_count'=>$users-$unacitvated,
                 'unactivated_count'=>$unacitvated],
-            'fields'=>$fieldsCount
+            'fields'=>$fieldsCount,
+            'verified_accounts'=>$users-$doesnotHaveExcel,
+            'unverified_accounts'=>$doesnotHaveExcel,
+            'total_visitors'=>$totalVisitors,
+            'most_visited'=>$mostVisited,
+            'signed_in_last_24_hours'=>$signedInLast24Hours,
+            'signed_in_last_week'=>$signedInLastWeek,
+            'signed_in_last_month'=>$signedInLastMonth
         ]],200);
     }
 
@@ -201,7 +266,11 @@ class AdminController extends Controller
     public function restPassword(Request $req){
 
        $user =User::query()
-        ->findOrFail($req->id);
+        ->where('id',$req->id)->first();
+
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']]);
+        }
 
         $user->update(['password'=>Hash::make($user->id)]);
 
@@ -213,8 +282,115 @@ class AdminController extends Controller
 
     public function getActivities(){
 
-        return response()->json(['data'=>Activity::all()]);
+        $activities = Activity::query()->latest()->paginate();
 
+        return response()->json(['data'=>$activities->items(),
+            'count'=>$activities->count()
+            ,'currentPage'=>$activities->currentPage()
+            ,'perPage'=>$activities->perPage()
+            ,'total'=>$activities->total()
+            ,'lastPage'=>$activities->lastPage()]);
+
+    }
+
+
+
+    public function addExcel(Request $req){
+
+        $user = User::where('id',$req->id)->first();
+
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']],401);
+        }
+
+        User::query()
+        ->where('id',$req->id)
+        ->update(['excel'=>$req->excel]);
+
+        return response()->json(['messaage'=>'excel link added successfully']);
+    }
+
+
+    /* public function uploadExcel(UploadExcelRequest $req){
+
+        $user = User::where('id',$req->id)->first();
+
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']],401);
+        }
+
+        $path = $req->file('excel')->store('private');
+
+
+        if($user->excel){
+            Storage::delete($user->excel);
+        }
+
+        User::query()
+        ->where('id',$req['id'])
+        ->update(['excel'=>$path]);
+
+        return response()->json(['messaage'=>'file uploaded successfully']);
+    }
+
+    */
+    /* public function getExcel(Request $req){
+
+        $user = User::where('id',$req->id)->first();
+
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']],401);
+        }
+
+        $user = $user->makeVisible(['excel']);
+
+        if(!$user->excel){
+            return response()->json(['errors'=>['user does not have an excel file']],401);
+        }
+
+
+        return Storage::download($user->excel);
+    }
+
+     public function deleteExcel(Request $req){
+
+        $user = User::where('id',$req->id)->first();
+
+        if(!$user){
+            return response()->json(['errors'=>['please enter a valid user id']],401);
+        }
+
+        $user = $user->makeVisible(['excel']);
+
+        if(!$user->excel){
+            return response()->json(['errors'=>['user does not have an excel file']],401);
+        }
+
+        Storage::delete($user->excel);
+
+        return response()->json(['messaage'=>'file deleted successfully']);
+
+    }
+
+    */
+    public function getAdmins(){
+
+        $admins = Admin::query()->latest()->get();
+
+        return response()->json(['data'=>$admins]);
+
+    }
+
+    public function getVisitors(){
+
+
+        $countries = DB::table('users')
+        ->where('country','!=',null)
+        ->select(['country',DB::raw('count(*) as total'),DB::raw('country_code')])
+        ->groupBy(['country','country_code'])
+        ->get();
+
+        return response()->json(['data'=>$countries]);
 
 
     }

@@ -20,7 +20,7 @@ class ChangePasswordRequest extends FormRequest
     }
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json(['message'=>'please enter your old and new password'],422));
+        throw new HttpResponseException(response()->json(['errors'=>$validator->errors()->all()],422));
 
     }
 

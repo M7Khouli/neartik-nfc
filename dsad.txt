@@ -1,0 +1,135 @@
+
+
+          <div class="container owl-2-style">
+                <div class="owl-carousel owl-2"  >
+
+            <!--
+
+{{$data['banner'] ?? null }}
+
+-->
+
+                        @if($data['Facebook'])
+              <a href={{$data['Facebook']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-facebook.svg" />
+                                </a>
+                                @endif
+
+                        @if($data['Instagram'])
+              <a href={{$data['Instagram']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-instagram.svg" />
+                                </a>
+                                @endif
+
+
+                        @if($data['Telegram'])
+              <a href={{$data['Telegram']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-telegram.svg" />
+                                </a>
+                                @endif
+
+                        @if($data['WhatsApp'])
+              <a href={{$data['WhatsApp']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-whatsapp.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['YouTube'])
+              <a href={{$data['YouTube']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-youtube.svg" />
+                                </a>
+                                @endif
+
+
+                            @if($data['WeChat'])
+              <a href={{$data['WeChat']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-wechat.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['BeReal'])
+              <a href={{$data['BeReal']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-bereal.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['Discrod'])
+              <a href={{$data['Discrod']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-discord.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['Messenger'])
+              <a href={{$data['Messenger']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-facebook-messenger.svg" />
+                                </a>
+                                @endif
+
+
+
+                                @if($data['LinkedIn'])
+              <a href={{$data['LinkedIn']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-linkedin.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['Pinterest'])
+              <a href={{$data['Pinterest']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-pinterest.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['Reddit'])
+              <a href={{$data['Reddit']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-reddit.svg" />
+                                </a>
+                                @endif
+
+
+                                @if($data['Snapchat'])
+              <a href={{$data['Snapchat']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-snapchat.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['Threads'])
+              <a href={{$data['Threads']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-threads.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['TikTok'])
+              <a href={{$data['TikTok']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-tiktok.svg" />
+                                </a>
+                                @endif
+
+                                @if($data['Twitter/X'])
+              <a href={{$data['Twitter/X']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-twitterx.svg" />
+                                </a>
+                                @endif
+
+
+
+                                @if($data['Twitch'])
+              <a href={{$data['Twitch']}} class="" target="_blank">
+                <img height="10px" width="10px" src="./icons8-twitch.svg" />
+                                </a>
+                                @endif
+
+
+            </div>
+
+            </div>
+
+                            @if($data['youtube_url'])
+          <div class="mt-4 mb-2 text-center">
+            <div  class="mb-3 mt-5" style="padding: 0 0 0 0; position: relative">
+              <div class="youtube-player" data-id={{$data['youtube_url']}}></div>
+            </div>
+                        </div>
+        </div>
+                        @endif
+
+

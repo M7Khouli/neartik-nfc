@@ -8,6 +8,7 @@ use App\Models\AdminNotification;
 use App\Models\Field;
 use App\Models\ProfileEdit;
 use App\Models\User;
+use App\Models\UserFcmToken;
 use App\Models\UserField;
 use App\Models\UserNotification;
 use App\Services\FcmService;
@@ -61,14 +62,19 @@ class ProfileEditController extends Controller
         $title = 'Your order get approved !';
         $body = 'Thanks for using our service';
 
-        FcmService::notify($title,$body,[$req->id]);
+        $token = UserFcmToken::query()
+        ->where('user_id',$req->id)->first();
 
-        $user = User::find($req->id)->first();
-        $admin = Admin::find($req->user()->id)->first();
+
+        FcmService::notify($title,$body,[$token->token]);
+
+        $user = User::where('id',$req->id)->first();
+        $admin = Admin::where('id',$req->user()->id)->first();
 
         activity()
         ->performedOn($user)
         ->causedBy($admin)
+        ->withProperties(['admin_email'=>$admin->email,'card_id'=>$user->card_id])
         ->log('Admin accepted user edits');
 
         UserNotification::query()
@@ -76,7 +82,7 @@ class ProfileEditController extends Controller
             ,'body'=>$body
             ,'user_id'=>$req->id
         ]);
-        AdminNotification::query()->where('body',$req->id)->delete();
+        AdminNotification::query()->where('body',$user->card_id)->delete();
         User::where('id',$req->id)->update(['approved'=>1]);
         return response()->json(['message'=>'edits successfully approved'],200);
 
@@ -85,10 +91,8 @@ class ProfileEditController extends Controller
     public function decline(Request $req){
 
         if(!$req->reason){
-            return response()->json(['message'=>'please enter a valid reason for declining'],422);
+            return response()->json(['errors'=>['please enter a valid reason for declining']],422);
         }
-
-        User::findOrFail($req->id)->first();
 
         $pendingProfileEdits = ProfileEdit::query()
         ->where('user_id',$req->id)
@@ -110,14 +114,20 @@ class ProfileEditController extends Controller
         $title = 'Sorry your order got declined.';
         $body = $req->reason;
 
-        FcmService::notify($title,$body,[$req->id]);
+
+        $token = UserFcmToken::query()
+        ->where('user_id',$req->id)->first();
 
 
-        $user = User::find($req->id)->first();
-        $admin = Admin::find($req->user()->id)->first();
+        FcmService::notify($title,$body,[$token->token]);
+
+
+        $user = User::where('id',$req->id)->first();
+        $admin = Admin::where('id',$req->user()->id)->first();
         activity()
         ->performedOn($user)
         ->causedBy($admin)
+        ->withProperties(['admin_email'=>$admin->email,'card_id'=>$user->card_id])
         ->log('Admin declined user edits');
 
 
@@ -127,9 +137,10 @@ class ProfileEditController extends Controller
             ,'user_id'=>$req->id
         ]);
 
-        AdminNotification::query()->where('body',$req->id)->delete();
+        AdminNotification::query()->where('body',$user->card_id)->delete();
         return response()->json(['message'=>'edits successfully declined'],200);
     }
 
 
 }
+

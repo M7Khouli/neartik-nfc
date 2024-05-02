@@ -72,7 +72,7 @@ class CreateProfileEditRequest extends FormRequest
     }
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json(['message'=>'please enter a valid info.'],422));
+        throw new HttpResponseException(response()->json(['errors'=>$validator->errors()->all()],422));
 
     }
 

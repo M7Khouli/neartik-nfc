@@ -18,7 +18,7 @@ class AuthController extends Controller
 
         if(!$admin || !Hash::check($req['password'],$admin->password)){
 
-        return response()->json(['message'=>'Incorrect username or password'],400);
+        return response()->json(['errors'=>['Incorrect username or password']],400);
 
         }
 
@@ -27,8 +27,11 @@ class AuthController extends Controller
 
         $token = $admin->createToken('Bearer')->plainTextToken;
 
-        if($req['fcmToken'])
-        AdminFcmToken::query()->firstOrCreate(['token'=>$req['fcmToken'],'admin_id'=>$admin->id]);
+
+        AdminFcmToken::query()
+        ->where(['admin_id'=>$admin->id])
+        ->delete();
+        AdminFcmToken::query()->create(['token'=>$req['fcmToken'],'admin_id'=>$admin->id]);
 
         return response()->json(['message'=>'login successfully !','token'=>$token],200);
 

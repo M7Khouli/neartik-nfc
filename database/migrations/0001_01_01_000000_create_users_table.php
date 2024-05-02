@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->integer('card_id')->unique();
+            $table->string('card_id')->unique();
             $table->string('password');
+            $table->string('country')->nullable();
+            $table->string('country_code')->nullable();
             $table->boolean('activated')->default(1);
             $table->boolean('approved')->default(0);
+            $table->string('excel')->nullable();
+            $table->bigInteger('visitors')->default(0);
             $table->timestamps();
         });
 

@@ -29,7 +29,11 @@ class User extends Authenticatable
         'card_id',
         'password',
         'activated',
-        'approved'
+        'approved',
+        'country',
+        'country_code',
+        'excel',
+        'visitors'
     ];
 
     public function userFields(): HasMany
@@ -56,6 +60,11 @@ class User extends Authenticatable
         return $this->hasMany(UserNotification::class);
     }
 
+    public function logins() {
+    return $this->hasMany(UserLogin::class);
+}
+
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -65,6 +74,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'excel'
     ];
 
     /**
@@ -80,4 +90,5 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
 }

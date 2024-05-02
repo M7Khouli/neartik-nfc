@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admin_fcm_tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('token')->unique();
+            $table->string('token');
             $table->foreignUuid('admin_id')->constrained();
             $table->timestamps();
         });

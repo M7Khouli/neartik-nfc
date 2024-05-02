@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_fcm_tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('token')->unique();
-            $table->foreignUuid('user_id')->constrained();
+            $table->string('token');
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
